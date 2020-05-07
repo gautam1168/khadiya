@@ -10,7 +10,7 @@ I will setup a basic Vue 3 project with Rollup. The official vue-next repo gives
 _ES Modules_ are not supported as an output format by Webpack. Rollup supports this format in addition to the standard _umd_ and _commonjs_ formats and seems to create smaller bundles than webpack. 
 
 ## TLDR;
-Get the setup for running a vue3 project with rollup as bundler from here.
+Get the setup for running a vue3 project with rollup as bundler from [here](https://github.com/gautam1168/rollup-vue-next.git). Clone it and run `npm run serve`
 
 ## Manual Setup
 Follow these steps to setup a project named `test`. At the end your directory structure should look like this
@@ -49,6 +49,7 @@ test
       <html>
         <head>
           <title>vue3 test</title>
+          <link href="bundle.esm.css" rel="stylesheet">
         </head>
         <body>
           <div id="app"></div>
@@ -72,15 +73,30 @@ test
     Add the following content to the `App.vue` file
     ```vue 
       <template>
-        <h1>Hello merve!</h1>
+        <div>Click the button to increase the number</div>
+        <div> {{ count }} </div>
+        <button @click="inc">Increase</button>
       </template>
       <script lang="ts">
-        export default {
-          setup() {
-            return {}
+      import { ref } from "vue";
+      export default {
+        setup() {
+          const count = ref(0)
+          const inc = () => {
+            count.value++
+          }
+          return {
+            count,
+            inc
           }
         }
+      }
       </script>
+      <style scoped>
+      * {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      </style>
     ```
 
     Add the following content to the index.ts file created above
@@ -100,8 +116,9 @@ test
     And add the following configuration to this file
     ```js
       import alias from 'rollup-plugin-alias';
-      import commonjs from 'rollup-plugin-commonjs' 
-      import VuePlugin from 'rollup-plugin-vue'
+      import commonjs from 'rollup-plugin-commonjs';
+      import VuePlugin from 'rollup-plugin-vue';
+      import css from 'rollup-plugin-css-only';
 
       export default {
         input: "src/index.ts",
@@ -110,15 +127,18 @@ test
           format: "es"
         },
         plugins: [
-          
           commonjs(),
-          VuePlugin(),
+          VuePlugin({
+            css: false
+          }),
+          css(),
           alias({
             resolve: [ '.js', '.ts' ],
             entries: [
               { find: 'vue', replacement: 'node_modules/vue/dist/vue.runtime.esm-browser.js' }
             ]
-          })
+          }),
+          
         ],
         watch: {
           include: 'src/**',
@@ -155,7 +175,7 @@ test
       },
     ```
 
-8. And now just run the serve command and visit your browser on localhost to see the website
+8. And now just run the serve command and visit your browser on http://localhost:8080 to see the website
     ```sh { linenos=false }
       npm run serve
     ```
